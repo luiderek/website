@@ -1,14 +1,19 @@
 # Motivations
 
 Slowly trying to annotate and make sense of the code for the prosemirror website collab demo for modification.
+
 End goal is a lightweight webapp collaborative version of the zim wiki. 
+
 Will eventually (if successful) have to transplant code with a different backend / bundling solution.
+
 Seems like a good project to become more familiar with dealing with modules if anything. 
 
 ## Installation
 
 npm install
+
 make
+
 npm run devserver -- --port 8888
 
 That will get you a server at [localhost:8888](http://localhost:8888/)
