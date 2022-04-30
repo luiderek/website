@@ -3,10 +3,13 @@ const path = require("path"),
   fs = require("fs");
 const { URL } = require("url");
 
+// Ideally need an alternative to this at some point in the future.
 const ModuleServer = require("moduleserve/moduleserver");
 const { handleCollabRequest } = require("./collab/server/server");
+// An old depreciated static file server middleware. Needs to be scrapped.
 const ecstatic = require("ecstatic");
 const { buildFile } = require("./build/buildfile");
+// Marjin's ES6 -> CommonJS converter, imports into requires.
 const tariff = require("tariff");
 
 let port = 8008;

@@ -1,5 +1,5 @@
 // marjin's homebrew dom element creation helper
-// i think I will look at this one later, not sure how it's relevant to my goals.
+// i think I will look into this file later, not high priority.
 import crel from "crelt";
 import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";

@@ -1,4 +1,7 @@
-import { exampleSetup, buildMenuItems } from "prosemirror-example-setup";
+// import { exampleSetup, buildMenuItems } from "prosemirror-example-setup";
+import { exampleSetup, buildMenuItems } from "../modules/pm-setup.js";
+// Nope, ES6 Does not work.
+// import { exampleSetup, buildMenuItems } from "../modules/pm-setup-es.js";
 import { Step } from "prosemirror-transform";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
