@@ -222,6 +222,7 @@ function markItem(markType, options) {
   return cmdItem(toggleMark(markType), passedOptions)
 }
 
+// currently unused, but a good reference for little modals. 
 function linkItem(markType) {
   return new MenuItem({
     title: "Add or remove link",
@@ -323,19 +324,19 @@ function buildMenuItems(schema) {
     { r.toggleCode = markItem(type, {title: "Toggle code font", icon: icons.code}); }
   if (type = schema.marks.link)
     { r.toggleLink = linkItem(type); }
-
-  if (type = schema.nodes.image)
-    { r.insertImage = insertImageItem(type); }
+  // images don't have errorchecking. Rather strip down and rebuild if it's deemed needed.
+  // if (type = schema.nodes.image)
+  //   { r.insertImage = insertImageItem(type); }
   if (type = schema.nodes.bullet_list)
     { r.wrapBulletList = wrapListItem(type, {
       title: "Wrap in bullet list",
       icon: icons.bulletList
     }); }
-  if (type = schema.nodes.ordered_list)
-    { r.wrapOrderedList = wrapListItem(type, {
-      title: "Wrap in ordered list",
-      icon: icons.orderedList
-    }); }
+  // if (type = schema.nodes.ordered_list)
+  //   { r.wrapOrderedList = wrapListItem(type, {
+  //     title: "Wrap in ordered list",
+  //     icon: icons.orderedList
+  //   }); }
   if (type = schema.nodes.blockquote)
     { r.wrapBlockQuote = wrapItem(type, {
       title: "Wrap in block quote",
@@ -358,29 +359,34 @@ function buildMenuItems(schema) {
         label: "Level " + i,
         attrs: {level: i}
       }); } }
-  if (type = schema.nodes.horizontal_rule) {
-    var hr = type;
-    r.insertHorizontalRule = new MenuItem({
-      title: "Insert horizontal rule",
-      label: "Horizontal rule",
-      enable: function enable(state) { return canInsert(state, hr) },
-      run: function run(state, dispatch) { dispatch(state.tr.replaceSelectionWith(hr.create())); }
-    });
-  }
+
+  // if you need HRs you should be using whitespace or a new document imo.
+  // if (type = schema.nodes.horizontal_rule) {
+  //   var hr = type;
+  //   r.insertHorizontalRule = new MenuItem({
+  //     title: "Insert horizontal rule",
+  //     label: "Horizontal rule",
+  //     enable: function enable(state) { return canInsert(state, hr) },
+  //     run: function run(state, dispatch) { dispatch(state.tr.replaceSelectionWith(hr.create())); }
+  //   });
+  // }
 
   var cut = function (arr) { return arr.filter(function (x) { return x; }); };
-  r.insertMenu = new Dropdown(cut([r.insertImage, r.insertHorizontalRule]), {label: "Insert"});
+  // commenting broke entire menu unexpectedly because it was being called by .fullMenu down below.
+  // r.insertMenu = new Dropdown(cut([r.insertImage, r.insertHorizontalRule]), {label: "Insert"});
   r.typeMenu = new Dropdown(cut([r.makeParagraph, r.makeCodeBlock, r.makeHead1 && new DropdownSubmenu(cut([
-    r.makeHead1, r.makeHead2, r.makeHead3, r.makeHead4, r.makeHead5, r.makeHead6
+    r.makeHead1, r.makeHead2, r.makeHead3
   ]), {label: "Heading"})]), {label: "Type..."});
 
-  r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode, r.toggleLink])];
+  r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode])];
+  // r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode, r.toggleLink])];
   r.blockMenu = [cut([r.wrapBulletList, r.wrapOrderedList, r.wrapBlockQuote, joinUpItem,
                       liftItem, selectParentNodeItem])];
-  r.fullMenu = r.inlineMenu.concat([[r.insertMenu, r.typeMenu]], [[undoItem, redoItem]], r.blockMenu);
+  r.fullMenu = r.inlineMenu.concat([[r.typeMenu]], [[undoItem, redoItem]], r.blockMenu);
 
   return r
 }
+
 
 var mac = typeof navigator != "undefined" ? /Mac/.test(navigator.platform) : false;
 
@@ -412,7 +418,12 @@ var mac = typeof navigator != "undefined" ? /Mac/.test(navigator.platform) : fal
 // You can suppress or map these bindings by passing a `mapKeys`
 // argument, which maps key names (say `"Mod-B"` to either `false`, to
 // remove the binding, or a new key name string.
+
+// I need to go into mapKeys and find whatever is linked to "tab"
+// So far unsuccessful, but I'm on the right path.
+// I just tried "Tab" and it seems to be fine.
 function buildKeymap(schema, mapKeys) {
+// OKAY. This is the important thing I was looking for a while back..
   var keys = {}, type;
   function bind(key, cmd) {
     if (mapKeys) {
@@ -422,7 +433,6 @@ function buildKeymap(schema, mapKeys) {
     }
     keys[key] = cmd;
   }
-
 
   bind("Mod-z", undo);
   bind("Shift-Mod-z", redo);
@@ -445,10 +455,14 @@ function buildKeymap(schema, mapKeys) {
   if (type = schema.marks.code)
     { bind("Mod-`", toggleMark(type)); }
 
+  // Ideally I need this behavior to be toggleable. 
+  // I think toggles are really important for QoL. 
+  // One command for one thing, on or off.
   if (type = schema.nodes.bullet_list)
     { bind("Shift-Ctrl-8", wrapInList(type)); }
-  if (type = schema.nodes.ordered_list)
-    { bind("Shift-Ctrl-9", wrapInList(type)); }
+  // Also I don't like counted lists so goodbye.
+    // if (type = schema.nodes.ordered_list)
+  //   { bind("Shift-Ctrl-9", wrapInList(type)); }
   if (type = schema.nodes.blockquote)
     { bind("Ctrl->", wrapIn(type)); }
   if (type = schema.nodes.hard_break) {
@@ -460,17 +474,21 @@ function buildKeymap(schema, mapKeys) {
     bind("Shift-Enter", cmd);
     if (mac) { bind("Ctrl-Enter", cmd); }
   }
+  // Much nicer feeling than  shift-[  shift-]
+  // still has bugs to work out, make it unable to tab from text element
+  // automerge two adjacent list items.
   if (type = schema.nodes.list_item) {
     bind("Enter", splitListItem(type));
-    bind("Mod-[", liftListItem(type));
-    bind("Mod-]", sinkListItem(type));
+    bind("Shift-Tab", liftListItem(type));
+    bind("Tab", sinkListItem(type));
   }
   if (type = schema.nodes.paragraph)
     { bind("Shift-Ctrl-0", setBlockType(type)); }
   if (type = schema.nodes.code_block)
     { bind("Shift-Ctrl-\\", setBlockType(type)); }
-  if (type = schema.nodes.heading)
-    { for (var i = 1; i <= 6; i++) { bind("Shift-Ctrl-" + i, setBlockType(type, {level: i})); } }
+  // Only accepting h1 to h3.
+    if (type = schema.nodes.heading)
+    { for (var i = 1; i <= 3; i++) { bind("Shift-Ctrl-" + i, setBlockType(type, {level: i})); } }
   if (type = schema.nodes.horizontal_rule) {
     var hr = type;
     bind("Mod-_", function (state, dispatch) {
@@ -531,7 +549,7 @@ function buildInputRules(schema) {
   if (type = schema.nodes.ordered_list) { rules.push(orderedListRule(type)); }
   if (type = schema.nodes.bullet_list) { rules.push(bulletListRule(type)); }
   if (type = schema.nodes.code_block) { rules.push(codeBlockRule(type)); }
-  if (type = schema.nodes.heading) { rules.push(headingRule(type, 6)); }
+  if (type = schema.nodes.heading) { rules.push(headingRule(type, 3)); }
   return inputRules({rules: rules})
 }
 
