@@ -8,7 +8,7 @@ const ecstatic = require("ecstatic")
 const {buildFile} = require("./build/buildfile")
 const tariff = require("tariff")
 
-let port = 8000
+let port = 8008
 const root = path.resolve(__dirname, "../public/")
 
 function usage(status) {
@@ -30,7 +30,7 @@ let moduleServer = new ModuleServer({
 let fileServer = ecstatic({root: root})
 
 function transformPage(req, resp) {
-  let path = (new URL(req.url)).pathname
+  let path = (new URL(req.url, 'http:/localhost/')).pathname
   let dir = /\/([^\.\/]+)?$/.exec(path)
   if (dir) path = (dir[1] ? path : path.slice(0, -1)) + "/index.html"
 
