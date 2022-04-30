@@ -42,6 +42,7 @@ import {
     annotationIcon
 } from "./comment"
 
+// Reporter: clearState() failure() delay() show() success()
 const report = new Reporter()
 
 function badVersion(err) {
@@ -113,6 +114,7 @@ class EditorConnection {
 
         if (newEditState) {
             let sendable
+            // AFAIK this just disconnects you when you're responsible for the document getting too large.
             if (newEditState.doc.content.size > 40000) {
                 if (this.state.comm != "detached") this.report.failure("Document too big. Detached.")
                 this.state = new State(newEditState, "detached")
@@ -300,6 +302,7 @@ class EditorConnection {
     }
 }
 
+// returns n-length array of val's
 function repeat(val, n) {
     let result = []
     for (let i = 0; i < n; i++) result.push(val)
@@ -321,6 +324,8 @@ let info = {
     name: document.querySelector("#docname"),
     users: document.querySelector("#users")
 }
+
+// The button listener that calls ShowDocList
 document.querySelector("#changedoc").addEventListener("click", e => {
     GET("/collab-backend/docs/").then(data => showDocList(e.target, JSON.parse(data)),
         err => report.failure(err))
@@ -333,6 +338,8 @@ function userString(n) {
 
 let docList
 
+// Generates the UL element filled with LIs of available rooms created rooms.
+// A static tree-varient of this is probably what I want, rather than a psuedo-select dropdown.
 function showDocList(node, list) {
     if (docList) docList.parentNode.removeChild(docList)
 
@@ -355,6 +362,7 @@ function showDocList(node, list) {
     ul.style.top = (rect.bottom + 10 + pageYOffset - ul.offsetHeight) + "px"
     ul.style.left = (rect.left - 5 + pageXOffset) + "px"
 
+    // When you click on the options, you either close the doclist and reassign location.hash, or you create a new Doc
     ul.addEventListener("click", e => {
         if (e.target.nodeName == "LI") {
             ul.parentNode.removeChild(ul)
@@ -400,4 +408,8 @@ function connectFromHash() {
 }
 
 addEventListener("hashchange", connectFromHash)
+
+// I believe this is just setting defaults to the first room.
+// connectFromHash returns false if location.hash doesn't include any '#edit-anything'
+// JS functions that return nothing counts as undefined, which is equivalent to false in bool land.
 connectFromHash() || (location.hash = "#edit-Example")
