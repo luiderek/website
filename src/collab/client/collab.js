@@ -326,8 +326,7 @@ const annotationMenuItem = new MenuItem({
   select: (state) => addAnnotation(state),
   icon: annotationIcon,
 });
-// I need to figure out a way to edit an imported function, so I can pick and choose
-// Just kidding, imports are immutable. Instead I need to make a copy of the ExampleSetup so I can modify it.
+
 let menu = buildMenuItems(schema);
 menu.fullMenu[0].push(annotationMenuItem);
 
@@ -434,6 +433,7 @@ function connectFromHash() {
   }
 }
 
+// When the part of the URL beginning with and following the # changes.
 addEventListener("hashchange", connectFromHash);
 
 // I believe this is just setting defaults to the first room.

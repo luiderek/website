@@ -463,17 +463,20 @@ function buildKeymap(schema, mapKeys) {
   // Also I don't like counted lists so goodbye.
     // if (type = schema.nodes.ordered_list)
   //   { bind("Shift-Ctrl-9", wrapInList(type)); }
-  if (type = schema.nodes.blockquote)
-    { bind("Ctrl->", wrapIn(type)); }
-  if (type = schema.nodes.hard_break) {
-    var br = type, cmd = chainCommands(exitCode, function (state, dispatch) {
-      dispatch(state.tr.replaceSelectionWith(br.create()).scrollIntoView());
-      return true
-    });
-    bind("Mod-Enter", cmd);
-    bind("Shift-Enter", cmd);
-    if (mac) { bind("Ctrl-Enter", cmd); }
-  }
+  // Block quotes are kinda buggy, don't seem very necessary either.
+  // if (type = schema.nodes.blockquote)
+  // //   { bind("Ctrl->", wrapIn(type)); }
+  // I think having a difference between text nodes for <p>'s and using <br> seperately
+  // is too much mental overhead, if you want smaller space between lines just fix it in CSS.
+  // if (type = schema.nodes.hard_break) {
+  //   var br = type, cmd = chainCommands(exitCode, function (state, dispatch) {
+  //     dispatch(state.tr.replaceSelectionWith(br.create()).scrollIntoView());
+  //     return true
+  //   });
+  //   bind("Mod-Enter", cmd);
+  //   bind("Shift-Enter", cmd);
+  //   if (mac) { bind("Ctrl-Enter", cmd); }
+  // }
   // Much nicer feeling than  shift-[  shift-]
   // still has bugs to work out, make it unable to tab from text element
   // automerge two adjacent list items.
