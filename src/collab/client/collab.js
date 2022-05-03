@@ -55,6 +55,8 @@ class EditorConnection {
   dispatch(action) {
     let newEditState = null;
     if (action.type == "loaded") {
+      // I see why this is commented with a fixme now.
+      // Occasionally load into the server with undefined users.
       info.users.textContent = userString(action.users); // FIXME ewww
       let editState = EditorState.create({
         doc: action.doc,
@@ -329,6 +331,8 @@ const annotationMenuItem = new MenuItem({
 
 let menu = buildMenuItems(schema);
 menu.fullMenu[0].push(annotationMenuItem);
+
+
 
 let info = {
   name: document.querySelector("#docname"),

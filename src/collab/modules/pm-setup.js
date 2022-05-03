@@ -332,16 +332,6 @@ function buildMenuItems(schema) {
       title: "Wrap in bullet list",
       icon: icons.bulletList
     }); }
-  // if (type = schema.nodes.ordered_list)
-  //   { r.wrapOrderedList = wrapListItem(type, {
-  //     title: "Wrap in ordered list",
-  //     icon: icons.orderedList
-  //   }); }
-  if (type = schema.nodes.blockquote)
-    { r.wrapBlockQuote = wrapItem(type, {
-      title: "Wrap in block quote",
-      icon: icons.blockquote
-    }); }
   if (type = schema.nodes.paragraph)
     { r.makeParagraph = blockTypeItem(type, {
       title: "Change to paragraph",
@@ -380,7 +370,7 @@ function buildMenuItems(schema) {
 
   r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode])];
   // r.inlineMenu = [cut([r.toggleStrong, r.toggleEm, r.toggleCode, r.toggleLink])];
-  r.blockMenu = [cut([r.wrapBulletList, r.wrapOrderedList, r.wrapBlockQuote, joinUpItem,
+  r.blockMenu = [cut([r.wrapBulletList, r.wrapBlockQuote, joinUpItem,
                       liftItem, selectParentNodeItem])];
   r.fullMenu = r.inlineMenu.concat([[r.typeMenu]], [[undoItem, redoItem]], r.blockMenu);
 
@@ -460,23 +450,6 @@ function buildKeymap(schema, mapKeys) {
   // One command for one thing, on or off.
   if (type = schema.nodes.bullet_list)
     { bind("Shift-Ctrl-8", wrapInList(type)); }
-  // Also I don't like counted lists so goodbye.
-    // if (type = schema.nodes.ordered_list)
-  //   { bind("Shift-Ctrl-9", wrapInList(type)); }
-  // Block quotes are kinda buggy, don't seem very necessary either.
-  // if (type = schema.nodes.blockquote)
-  // //   { bind("Ctrl->", wrapIn(type)); }
-  // I think having a difference between text nodes for <p>'s and using <br> seperately
-  // is too much mental overhead, if you want smaller space between lines just fix it in CSS.
-  // if (type = schema.nodes.hard_break) {
-  //   var br = type, cmd = chainCommands(exitCode, function (state, dispatch) {
-  //     dispatch(state.tr.replaceSelectionWith(br.create()).scrollIntoView());
-  //     return true
-  //   });
-  //   bind("Mod-Enter", cmd);
-  //   bind("Shift-Enter", cmd);
-  //   if (mac) { bind("Ctrl-Enter", cmd); }
-  // }
   // Much nicer feeling than  shift-[  shift-]
   // still has bugs to work out, make it unable to tab from text element
   // automerge two adjacent list items.
@@ -504,21 +477,6 @@ function buildKeymap(schema, mapKeys) {
 }
 
 // : (NodeType) → InputRule
-// Given a blockquote node type, returns an input rule that turns `"> "`
-// at the start of a textblock into a blockquote.
-function blockQuoteRule(nodeType) {
-  return wrappingInputRule(/^\s*>\s$/, nodeType)
-}
-
-// : (NodeType) → InputRule
-// Given a list node type, returns an input rule that turns a number
-// followed by a dot at the start of a textblock into an ordered list.
-function orderedListRule(nodeType) {
-  return wrappingInputRule(/^(\d+)\.\s$/, nodeType, function (match) { return ({order: +match[1]}); },
-                           function (match, node) { return node.childCount + node.attrs.order == +match[1]; })
-}
-
-// : (NodeType) → InputRule
 // Given a list node type, returns an input rule that turns a bullet
 // (dash, plush, or asterisk) at the start of a textblock into a
 // bullet list.
@@ -538,6 +496,7 @@ function codeBlockRule(nodeType) {
 // turns up to that number of `#` characters followed by a space at
 // the start of a textblock into a heading whose level corresponds to
 // the number of `#` signs.
+// ATM the CSS for headers are somewhat borked in the differences between h1 and h2, h3.
 function headingRule(nodeType, maxLevel) {
   return textblockTypeInputRule(new RegExp("^(#{1," + maxLevel + "})\\s$"),
                                 nodeType, function (match) { return ({level: match[1].length}); })
@@ -548,8 +507,6 @@ function headingRule(nodeType, maxLevel) {
 // code blocks, and heading.
 function buildInputRules(schema) {
   var rules = smartQuotes.concat(ellipsis, emDash), type;
-  if (type = schema.nodes.blockquote) { rules.push(blockQuoteRule(type)); }
-  if (type = schema.nodes.ordered_list) { rules.push(orderedListRule(type)); }
   if (type = schema.nodes.bullet_list) { rules.push(bulletListRule(type)); }
   if (type = schema.nodes.code_block) { rules.push(codeBlockRule(type)); }
   if (type = schema.nodes.heading) { rules.push(headingRule(type, 3)); }
