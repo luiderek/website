@@ -30,16 +30,20 @@ for (let i = 2; i < process.argv.length; i++) {
 
 let moduleServer = new ModuleServer({
   root,
+  // If the module path doesn't end in json, run it through tariff,
+  // which is marjin's ES6 converter to CommonJS modules
   transform(path, content) {
     return /\.json$/.test(path) ? content : tariff(content);
   },
 });
+// estatic is unmaintained and depreciated, need different middleware.
 let fileServer = ecstatic({
   root: root,
 });
 
 function transformPage(req, resp) {
   let path = new URL(req.url, "http:/localhost/").pathname;
+  // The final chunk of a path ./directory"/THISSELECTED"
   let dir = /\/([^\.\/]+)?$/.exec(path);
   if (dir) path = (dir[1] ? path : path.slice(0, -1)) + "/index.html";
 
@@ -76,6 +80,7 @@ function maybeCollab(req, resp) {
   return false;
 }
 
+// Chaining the different calls with ORs is interesting.
 createServer((req, resp) => {
   maybeCollab(req, resp) ||
     moduleServer.handleRequest(req, resp) ||
